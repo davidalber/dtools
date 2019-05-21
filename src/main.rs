@@ -1,5 +1,8 @@
 extern crate clap;
+extern crate rand;
+
 use clap::{App, SubCommand};
+use rand::Rng;
 use std::io::Read;
 
 struct Welford {
@@ -30,6 +33,56 @@ impl Welford {
     }
 }
 
+fn find_nth(start_ind: usize, stop_ind: usize, target: usize, mut vec: &mut Vec<f64>) -> f64 {
+    // stop_ind is exclusive
+    let mut rng = rand::thread_rng();
+    let pivot = rng.gen_range(start_ind, stop_ind);
+    let pivot_val = *vec.get(pivot).unwrap();
+
+    // Swap pivot into tail position.
+    vec.swap(pivot, stop_ind - 1);
+
+    let mut i = start_ind;
+    for j in i..stop_ind - 1 {
+        if *vec.get(j).unwrap() < pivot_val {
+            vec.swap(i, j);
+            i += 1;
+        }
+    }
+
+    // Swap the pivot into the correct position.
+    vec.swap(stop_ind - 1, i);
+
+    // At this point, the pivot value is its sorted position.
+    if i == target {
+        // The current pivot is the target value.
+        pivot_val
+    } else if i < target {
+        // Recursively search the right partition.
+        find_nth(i + 1, stop_ind, target, &mut vec)
+    } else {
+        // Recursively search the left partition.
+        find_nth(start_ind, i, target, &mut vec)
+    }
+}
+
+fn find_median(mut vec: &mut Vec<f64>) -> f64 {
+    // Find median through incomplete quicksort.
+    let len = *&vec.len();
+    match len % 2 {
+        0 => {
+            // even
+            let low = find_nth(0, len, len / 2 - 1, &mut vec);
+            let high = find_nth(0, len, len / 2, &mut vec);
+            (low + high) / 2.
+        }
+        _ => {
+            // odd
+            find_nth(0, len, len / 2, &mut vec)
+        }
+    }
+}
+
 #[derive(Debug)]
 struct Data {
     data: Vec<f64>,
@@ -37,10 +90,11 @@ struct Data {
     max: f64,
     mean: f64,
     variance: f64,
+    median: f64,
 }
 
 impl Data {
-    fn new(data: Vec<f64>) -> Self {
+    fn new(mut data: Vec<f64>) -> Self {
         let mut max = std::f64::MIN;
         let mut min = std::f64::MAX;
         let mut welford = Welford::new();
@@ -56,12 +110,15 @@ impl Data {
             welford.update(*val);
         }
 
+        let median = find_median(&mut data);
+
         Data {
             data,
             min,
             max,
             mean: welford.mean,
             variance: welford.sample_variance(),
+            median,
         }
     }
 
@@ -127,10 +184,11 @@ fn main() -> Result<(), i32> {
             data.max,
         );
         println!(
-            "# Mean = {:.6}; Variance = {:.6}; SD = {:.6}",
+            "# Mean = {:.6}; Variance = {:.6}; SD = {:.6}; Median = {:.6}",
             data.mean,
             data.variance,
-            data.stddev()
+            data.stddev(),
+            data.median,
         );
     }
 
