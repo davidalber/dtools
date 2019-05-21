@@ -7,14 +7,19 @@ struct Data {
     data: Vec<f64>,
     min_val: f64,
     max_val: f64,
+    mean: f64,
 }
 
 impl Data {
     fn new(data: Vec<f64>) -> Self {
         let mut max_val = std::f64::MIN;
         let mut min_val = std::f64::MAX;
+        let len = data.len();
+        let mut agg: f64 = 0.;
 
         for val in data.iter() {
+            agg += *val;
+
             if *val > max_val {
                 max_val = *val;
             }
@@ -27,6 +32,7 @@ impl Data {
             data,
             min_val,
             max_val,
+            mean: agg / len as f64,
         }
     }
 
@@ -96,6 +102,7 @@ fn main() -> Result<(), i32> {
             data.min(),
             data.max()
         );
+        println!("# Mean = {:.6}", data.mean);
     }
 
     Ok(())
