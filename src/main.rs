@@ -5,47 +5,39 @@ use std::io::Read;
 #[derive(Debug)]
 struct Data {
     data: Vec<f64>,
-    min_val: f64,
-    max_val: f64,
+    min: f64,
+    max: f64,
     mean: f64,
 }
 
 impl Data {
     fn new(data: Vec<f64>) -> Self {
-        let mut max_val = std::f64::MIN;
-        let mut min_val = std::f64::MAX;
+        let mut max = std::f64::MIN;
+        let mut min = std::f64::MAX;
         let len = data.len();
         let mut agg: f64 = 0.;
 
         for val in data.iter() {
             agg += *val;
 
-            if *val > max_val {
-                max_val = *val;
+            if *val > max {
+                max = *val;
             }
-            if *val < min_val {
-                min_val = *val;
+            if *val < min {
+                min = *val;
             }
         }
 
         Data {
             data,
-            min_val,
-            max_val,
+            min,
+            max,
             mean: agg / len as f64,
         }
     }
 
     fn len(&self) -> usize {
         self.data.len()
-    }
-
-    fn min(&self) -> f64 {
-        self.min_val
-    }
-
-    fn max(&self) -> f64 {
-        self.max_val
     }
 }
 
@@ -99,8 +91,8 @@ fn main() -> Result<(), i32> {
         println!(
             "# NumSamples = {}; Min = {:.2}; Max = {:.2}",
             data.len(),
-            data.min(),
-            data.max()
+            data.min,
+            data.max,
         );
         println!("# Mean = {:.6}", data.mean);
     }
