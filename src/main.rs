@@ -2,42 +2,75 @@ extern crate clap;
 use clap::{App, SubCommand};
 use std::io::Read;
 
+struct Welford {
+    count: usize,
+    mean: f64,
+    m2: f64,
+}
+
+impl Welford {
+    fn new() -> Self {
+        Welford {
+            count: 0,
+            mean: 0.,
+            m2: 0.,
+        }
+    }
+
+    fn update(&mut self, value: f64) {
+        self.count += 1;
+        let delta = value - self.mean;
+        self.mean += delta / self.count as f64;
+        let delta2 = value - self.mean;
+        self.m2 += delta * delta2;
+    }
+
+    fn sample_variance(&self) -> f64 {
+        self.m2 / self.count as f64
+    }
+}
+
 #[derive(Debug)]
 struct Data {
     data: Vec<f64>,
     min: f64,
     max: f64,
     mean: f64,
+    variance: f64,
 }
 
 impl Data {
     fn new(data: Vec<f64>) -> Self {
         let mut max = std::f64::MIN;
         let mut min = std::f64::MAX;
-        let len = data.len();
-        let mut agg: f64 = 0.;
+        let mut welford = Welford::new();
 
         for val in data.iter() {
-            agg += *val;
-
             if *val > max {
                 max = *val;
             }
             if *val < min {
                 min = *val;
             }
+
+            welford.update(*val);
         }
 
         Data {
             data,
             min,
             max,
-            mean: agg / len as f64,
+            mean: welford.mean,
+            variance: welford.sample_variance(),
         }
     }
 
     fn len(&self) -> usize {
         self.data.len()
+    }
+
+    fn stddev(&self) -> f64 {
+        self.variance.sqrt()
     }
 }
 
@@ -87,14 +120,18 @@ fn main() -> Result<(), i32> {
     };
 
     if matches.subcommand_matches("histogram").is_some() {
-        println!("{:?}", data);
         println!(
             "# NumSamples = {}; Min = {:.2}; Max = {:.2}",
             data.len(),
             data.min,
             data.max,
         );
-        println!("# Mean = {:.6}", data.mean);
+        println!(
+            "# Mean = {:.6}; Variance = {:.6}; SD = {:.6}",
+            data.mean,
+            data.variance,
+            data.stddev()
+        );
     }
 
     Ok(())
