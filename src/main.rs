@@ -176,20 +176,21 @@ fn main() -> Result<(), i32> {
         }
     };
 
+    println!(
+        "# NumSamples = {}; Min = {:.2}; Max = {:.2}",
+        data.len(),
+        data.min,
+        data.max,
+    );
+    println!(
+        "# Mean = {:.6}; Variance = {:.6}; SD = {:.6}; Median = {:.6}",
+        data.mean,
+        data.variance,
+        data.stddev(),
+        data.median,
+    );
+
     if matches.subcommand_matches("histogram").is_some() {
-        println!(
-            "# NumSamples = {}; Min = {:.2}; Max = {:.2}",
-            data.len(),
-            data.min,
-            data.max,
-        );
-        println!(
-            "# Mean = {:.6}; Variance = {:.6}; SD = {:.6}; Median = {:.6}",
-            data.mean,
-            data.variance,
-            data.stddev(),
-            data.median,
-        );
     }
 
     Ok(())
