@@ -2,7 +2,7 @@ mod dhacks;
 
 extern crate clap;
 
-use clap::{App, SubCommand};
+use clap::{App, ArgMatches, SubCommand};
 use std::io::Read;
 
 use dhacks::data::Data;
@@ -34,8 +34,8 @@ fn load_data() -> std::io::Result<Data> {
     Ok(Data::new(data))
 }
 
-fn main() -> Result<(), i32> {
-    let matches = App::new("dhacks")
+fn parse_command_line() -> ArgMatches<'static> {
+    App::new("dhacks")
         .version("0.1")
         .about("Visualize data in the terminal")
         .subcommand(
@@ -43,16 +43,10 @@ fn main() -> Result<(), i32> {
                 .aliases(&["histo"])
                 .about("(alias: \"histo\") Generate histogram from data"),
         )
-        .get_matches();
+        .get_matches()
+}
 
-    let data: Data = match load_data() {
-        Ok(d) => d,
-        Err(e) => {
-            println!("{}", e);
-            return Err(1);
-        }
-    };
-
+fn print_aggregates(data: &Data) {
     println!(
         "# NumSamples = {}; Min = {:.2}; Max = {:.2}",
         data.len(),
@@ -66,6 +60,20 @@ fn main() -> Result<(), i32> {
         data.stddev(),
         data.median,
     );
+}
+
+fn main() -> Result<(), i32> {
+    let matches = parse_command_line();
+
+    let data: Data = match load_data() {
+        Ok(d) => d,
+        Err(e) => {
+            println!("{}", e);
+            return Err(1);
+        }
+    };
+
+    print_aggregates(&data);
 
     if matches.subcommand_matches("histogram").is_some() {
         let histo = Histogram::new(&data, 10);
