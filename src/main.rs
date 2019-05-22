@@ -1,12 +1,12 @@
-mod dhacks;
+mod dtools;
 
 extern crate clap;
 
 use clap::{App, ArgMatches, SubCommand};
 use std::io::Read;
 
-use dhacks::data::Data;
-use dhacks::histogram::Histogram;
+use dtools::data::Data;
+use dtools::histogram::Histogram;
 
 fn load_data() -> std::io::Result<Data> {
     let mut data: Vec<f64> = Vec::new();
