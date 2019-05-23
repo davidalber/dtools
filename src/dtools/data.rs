@@ -127,3 +127,38 @@ impl Data {
         self.variance.sqrt()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use permutohedron;
+
+    #[test]
+    fn test_find_nth() {
+        let mut v: Vec<f64> = vec![1., 2., 3., 4., 5.];
+        let permutations = permutohedron::Heap::new(&mut v);
+        for mut vp in permutations {
+            for i in 0..5 {
+                for _ in 0..100 {
+                    assert_eq!(find_nth(0, vp.len(), i, &mut vp), i as f64 + 1.);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn median_even() {
+        for _ in 0..1000 {
+            let mut v: Vec<f64> = vec![1., 2., 3., 4.];
+            assert_eq!(find_median(&mut v), 2.5);
+        }
+    }
+
+    #[test]
+    fn median_odd() {
+        for _ in 0..1000 {
+            let mut v: Vec<f64> = vec![1., 2., 3.];
+            assert_eq!(find_median(&mut v), 2.);
+        }
+    }
+}
