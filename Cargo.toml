@@ -1,5 +1,5 @@
 [package]
-name = "dhacks"
+name = "dtools"
 version = "0.1.0"
 authors = ["David Alber <alber.david@gmail.com>"]
 edition = "2018"
